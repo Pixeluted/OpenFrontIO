@@ -214,7 +214,7 @@ export function handlePurchaseReturn(
  * whole app to its logged-out UI immediately after a successful purchase. A
  * stale balance is much the better failure.
  */
-async function broadcastFreshUserMe(): Promise<void> {
+export async function broadcastFreshUserMe(): Promise<void> {
   invalidateUserMe();
   const fresh = await getUserMe();
   if (fresh === false) return;

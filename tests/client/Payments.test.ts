@@ -114,6 +114,7 @@ function okRedirect(url: string): PaymentsCheckoutResult {
       kind: "currency_pack",
       handoff: "redirect",
       redirectUrl: url,
+      clientSecret: null,
       expiresAt: null,
     },
   };
@@ -138,6 +139,7 @@ function okOverlay(orderId: string | null = "1234"): PaymentsCheckoutResult {
       kind: "currency_pack",
       handoff: "client_overlay",
       redirectUrl: null,
+      clientSecret: null,
       expiresAt: null,
     },
   };

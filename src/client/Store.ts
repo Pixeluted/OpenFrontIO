@@ -28,6 +28,7 @@ import {
 } from "./Cosmetics";
 import {
   customCurrencyAvailable,
+  priceStringToCents,
   reportPendingSteamAuthorizations,
 } from "./Payments";
 import { translateText } from "./Utils";
@@ -384,6 +385,7 @@ export class StoreModal extends BaseModal {
     userHasSubscription: boolean,
   ): TemplateResult {
     const priced = resolved.cosmetic as {
+      name?: string;
       product?: Product | null;
       priceHard?: number;
       priceSoft?: number;
@@ -402,10 +404,30 @@ export class StoreModal extends BaseModal {
     const priceSoft = isPurchasable ? priced?.priceSoft : undefined;
     const purchase = (method: "dollar" | "hard" | "soft") =>
       purchaseCosmetic(resolved, method);
+    // Currency packs check out inline (wallet button / in-page card form)
+    // when the display price parses; anything else — including subscriptions,
+    // which are recurring and not a PaymentIntent — keeps the redirect flow,
+    // which is also what an unparseable price degrades to.
+    const amountCents =
+      resolved.type === "pack" && product !== null && priced?.name !== undefined
+        ? priceStringToCents(product.price)
+        : null;
+    const inlineCheckout =
+      amountCents !== null
+        ? {
+            request: {
+              kind: "currency_pack" as const,
+              packName: priced!.name!,
+            },
+            amountCents,
+            successMessageKey: "store.currency_pack_purchase_success",
+          }
+        : null;
     // Reserved currency lines are assigned per visual row by
     // alignPurchaseRows() once the grid has laid out.
     return html`<purchase-button
       .product=${product}
+      .inlineCheckout=${inlineCheckout}
       .priceHard=${priceHard ?? null}
       .priceSoft=${priceSoft ?? null}
       .rarity=${priced?.rarity ?? "common"}
